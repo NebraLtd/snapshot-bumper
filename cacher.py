@@ -44,7 +44,7 @@ while(lastBlock < blockchainHeight):
         with urllib.request.urlopen(blockUrl) as response:
             blockJson = json.loads(response.read())['data']
             print(blockJson)
-            #db.insert(blockJson)
+            db.insert(blockJson)
 
     except HTTPError as e:
         #Most likely not generate yet. Sleep
