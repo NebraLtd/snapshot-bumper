@@ -1,16 +1,19 @@
 # Program that stores blocks to database.
 
 from time import sleep
-from tinydb import TinyDB, Query
+# from tinydb import TinyDB, Query
 import urllib.request
 import json
 from urllib.error import URLError, HTTPError
+from pprint import pprint
 
-
-db = TinyDB('block_cache.json')
+import sqlite3
+con = sqlite3.connect('block_cache.db')
+cur = con.cursor()
+# db = TinyDB('block_cache.json')
 
 # Set last block variable as a starting point
-lastBlock = 762481
+lastBlock = 800641
 blockchainHeight = 0
 
 apiUrl = "https://api.helium.io/v1/blocks/"
@@ -31,14 +34,14 @@ except HTTPError as e:
 print(blockchainHeight)
 
 # Getting latest entry
-# print(db.all()[0])
-latestBlock = sorted(db.all(), key=lambda k: k['height'])
 
 try:
-    lastBlock = (int(latestBlock[-1]['height'])+1)
-except IndexError as e:
+    cur.execute('SELECT * FROM blocks ORDER BY height DESC')
+
+    lastBlock = cur.fetchone()[4]
+except TypeError as e:
     pass
-    
+
 print("Loading blocks into cache db")
 
 while(lastBlock < blockchainHeight):
@@ -46,12 +49,14 @@ while(lastBlock < blockchainHeight):
     try:
         with urllib.request.urlopen(blockUrl) as response:
             blockJson = json.loads(response.read())['data']
-            print(blockJson)
-            db.insert(blockJson)
-
+            #pprint(blockJson)
+            cur.execute("insert into blocks values (?, ?, ?, ?, ?, ?)", (blockJson['transaction_count'], blockJson['time'], blockJson['snapshot_hash'], blockJson['prev_hash'], blockJson['height'], blockJson['hash']))
+            con.commit()
     except HTTPError as e:
         #Most likely not generate yet. Sleep
         print("Waiting for request")
         sleep(2)
+    except sqlite3.IntegrityError as e:
+        print("Already in DB")
     print(lastBlock)
     lastBlock+=1
