@@ -10,7 +10,7 @@ from urllib.error import URLError, HTTPError
 db = TinyDB('block_cache.json')
 
 # Set last block variable as a starting point
-lastBlock = 0
+lastBlock = 762481
 blockchainHeight = 0
 
 apiUrl = "https://api.helium.io/v1/blocks/"
