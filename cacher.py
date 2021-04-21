@@ -34,8 +34,11 @@ print(blockchainHeight)
 # print(db.all()[0])
 latestBlock = sorted(db.all(), key=lambda k: k['height'])
 
-lastBlock = (int(latestBlock[-1]['height'])+1)
-
+try:
+    lastBlock = (int(latestBlock[-1]['height'])+1)
+except IndexError as e:
+    pass
+    
 print("Loading blocks into cache db")
 
 while(lastBlock < blockchainHeight):
