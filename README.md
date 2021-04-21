@@ -1,2 +1,5 @@
 # snapshot-bumper
-Tool to generate snapshot bumps for the helium miner.
+
+To try and speed up the onboarding process for customers, Nebra Helium Hotspots will download a more up to date version of the blockchain each time they are powered up.
+
+This tool will keep a cache of blocks in a flatfile database or such to use for the blessed block, and on a cron generate a new static file which is downloaded by the hotspots on boot.
