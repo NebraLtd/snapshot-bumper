@@ -4,7 +4,7 @@ import urllib.request
 import json
 import base64
 from urllib.error import URLError, HTTPError
-con = sqlite3.connect('block_cache.db')
+con = sqlite3.connect('/opt/nebrascripts/snapshot-bumper/block_cache.db')
 cur = con.cursor()
 
 blockchainHeight = 0
@@ -27,15 +27,23 @@ except HTTPError as e:
 try:
     cur.execute('SELECT * FROM blocks WHERE snapshot_hash IS NOT "" ORDER BY height DESC')
 
+    lastBlessedBlock = cur.fetchone()
+except TypeError as e:
+    pass
+    
+try:
+    cur.execute('SELECT * FROM blocks ORDER BY height DESC')
+
     lastBlock = cur.fetchone()
 except TypeError as e:
     pass
 
 # print(lastBlock)
-date = datetime.datetime.fromtimestamp(lastBlock[1]).strftime("%m/%d/%Y, %H:%M:%S")
+date = datetime.datetime.fromtimestamp(lastBlessedBlock[1]).strftime("%m/%d/%Y, %H:%M:%S")
+print("Last Blessed Block: " + str(lastBlessedBlock[4]))
 print("Last Blessed Block Date: " + date)
 print(str(blockchainHeight-lastBlock[4]) + " Blocks left to sync")
-snapshot_hash = lastBlock[2]
+snapshot_hash = lastBlessedBlock[2]
 snapshot_hash += "=" * ((3- len(snapshot_hash) % 3) % 3)
 hashArray = list(base64.urlsafe_b64decode(snapshot_hash))
 # print(hashArray)
@@ -45,7 +53,7 @@ with open('baseConfig.config', 'r') as file :
   filedata = file.read()
 
 # Replace the target string
-filedata = filedata.replace('bsbheight', str(lastBlock[4]))
+filedata = filedata.replace('bsbheight', str(lastBlessedBlock[4]))
 filedata = filedata.replace('bsbhash', str(hashString))
 
 # Write the file out again
